@@ -1,0 +1,103 @@
+import 'dotenv/config'
+import { userModel } from "../models/userModel.js"
+import jwt from 'jsonwebtoken'
+import { sendEmail } from "../services/email.service.js"
+import mongoose from 'mongoose'
+
+export async function registerController(req, res) {
+    const { username, email, password } = req.body
+
+    const userExists = await userModel.findOne({ email })
+    if(userExists){
+        return res.status(409).json({
+            message: "User already exist with this email.",
+            success: false,
+            err: "User already exist."
+        })
+    }
+
+    const session = await mongoose.startSession()
+    session.startTransaction();
+
+    try {
+        const user = await userModel.create([{
+            username,
+            email,
+            password
+        }], { session })
+
+        const emailVerificationtoken = jwt.sign({
+            email: user.email
+        }, process.env.JWT_SECRET)
+
+        const emailResponse = await sendEmail({
+            to: email,
+            subject: "Welcome to Cerebro AI",
+            html: `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; color: #333;">
+                
+                <h2 style="color: #111;">Welcome to Cerebro AI.</h2>
+
+                <p>Hi ${username},</p>
+
+                <p>
+                    Thank you for registering with Cerebro AI.
+                    Please verify your email address to activate your account.
+                </p>
+
+                <div style="margin: 30px 0;">
+                    <a 
+                        href="http://localhost:8000/api/auth/verify-email?token=${emailVerificationtoken}"
+                        style="
+                            background-color: #111827;
+                            color: #ffffff;
+                            padding: 12px 24px;
+                            text-decoration: none;
+                            border-radius: 6px;
+                            display: inline-block;
+                            font-weight: bold;
+                        "
+                    >
+                        Verify Email
+                    </a>
+                </div>
+
+                <p>This verification link will expire in 30 minutes.</p>
+
+                <p>
+                    If you didn’t create this account, you can safely ignore this email.
+                </p>
+
+                <br />
+
+                <p>Welcome aboard!</p>
+
+                <p>
+                    — Team Cerebro AI
+                </p>
+            </div>
+            `
+        })
+
+        await session.commitTransaction()
+        session.endSession()
+
+        res.status(200).json({
+            message: "User register successfullt, verification mail sent.",
+            success: true,
+            user: {
+                username: user.username,
+                email: user.email
+            }
+        })
+    } catch (err) {
+        await session.abortTransaction()
+        session.endSession()
+
+        return res.status(400).json({
+            message: "Registration failed, please try again.",
+            success: false,
+            err: err.message
+        })
+    }
+}
