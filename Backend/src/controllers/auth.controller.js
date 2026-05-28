@@ -1,5 +1,5 @@
 import 'dotenv/config'
-import { userModel } from "../models/userModel.js"
+import { userModel } from "../models/user.model.js"
 import jwt, { decode } from 'jsonwebtoken'
 import { sendEmail } from "../services/email.service.js"
 import mongoose from 'mongoose'
@@ -222,3 +222,4 @@ export async function resendVerificationEmail(req, res){
         succes: true
     })
 }
+
