@@ -1,6 +1,6 @@
 import 'dotenv/config'
 import { userModel } from "../models/userModel.js"
-import jwt from 'jsonwebtoken'
+import jwt, { decode } from 'jsonwebtoken'
 import { sendEmail } from "../services/email.service.js"
 import mongoose from 'mongoose'
 
@@ -20,7 +20,7 @@ export async function registerController(req, res) {
     session.startTransaction();
 
     try {
-        const user = await userModel.create([{
+        const [user] = await userModel.create([{
             username,
             email,
             password
@@ -100,4 +100,38 @@ export async function registerController(req, res) {
             err: err.message
         })
     }
+}
+
+export async function verifyEmail(req, res) {
+    const { token } = req.query
+
+    if(!token){
+        return res.status(404).json({
+            message: "Missing token",
+            success: false,
+            err: "Missing token"
+        })
+    }
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET)
+    const user = await userModel.findOne({ email: decoded.email })
+
+    if(!user){
+        return res.status(401).json({
+            message: "Unauthorized token",
+            success: false,
+            err: "Unauthorized token"
+        })
+    }
+
+    user.verified = true
+    user.save()
+
+    const html = `
+        <h1>Email verified successfull</h1>
+        <p>Your email has been verified. You can now login to your account.</p>
+        <a href='http://localhost:8000/api/auth/login'>Login</a>
+    `
+
+    res.send(html)
 }
