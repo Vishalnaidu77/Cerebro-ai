@@ -135,3 +135,42 @@ export async function verifyEmail(req, res) {
 
     res.send(html)
 }
+
+export async function loginController(req, res){
+    const { email, password } = req.body
+
+    const user = await userModel.findOne({ email })
+    if(!user){
+        return res.status(404).json({
+            message: "User not exist with this email, please register first.",
+            success: false,
+            err: "User not exists."
+        })
+    }
+
+    if(!user.verified){
+        res.status(401).json({
+            message: "User email not verified yet, please verify the email.",
+            succes: false,
+            err: "Email not verified"
+        })
+    }
+
+    const passVerify = await user.comparePassword(password)
+    if(!passVerify){
+        return res.status(401).json({
+            message: "Invalid credentials.",
+            success: false,
+            err: "Invalid credentials"
+        })
+    }
+
+    res.status(200).json({
+        message: "User logged in sucessfully.",
+        success: true,
+        user: {
+            username: user.username,
+            email: user.email
+        }
+    })
+}
