@@ -174,3 +174,51 @@ export async function loginController(req, res){
         }
     })
 }
+
+export async function resendVerificationEmail(req, res){
+    const { email } = req.body
+
+    const user = await userModel.findOne({ email })
+    if(!user){
+        return res.status(404).json({
+            message: "User not found.",
+            succes: false,
+            err: "User not found"
+        })
+    }
+
+    if(user.verified){
+        return res.status(409).json({
+            message: "User alreadyy verified",
+            success: false,
+            err: "Already verified"
+        })
+    }
+
+    const emailVerificationToken = jwt.sign({
+        email: user.email,
+    }, process.env.JWT_SECRET)
+
+    sendEmail({
+        to: email,
+        subject: "New verification link",
+        html: `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; color: #333;"> 
+                <h2 style="color: #111;">Verify Your Email</h2> 
+                <p>Hi ${user.username},</p> 
+                <p> You requested a new email verification link for your Cerebro AI account. </p> 
+                <div style="margin: 30px 0;"> 
+                    <a href="http://localhost:8000/api/auth/verify-email?token=${emailVerificationToken}" style=" background-color: #111827; color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: bold; " > Verify Email </a> 
+                </div> <p>This link will expire in 30 minutes.</p> 
+                <p> If you didn’t request this email, you can safely ignore it. </p> 
+                <br /> 
+                <p> — Team Cerebro AI </p> 
+            </div>
+        `
+    })
+
+    res.status(200).json({
+        message: "Resent verification mail successfully.",
+        succes: true
+    })
+}
