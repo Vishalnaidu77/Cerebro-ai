@@ -150,7 +150,7 @@ export async function loginController(req, res){
     }
 
     if(!user.verified){
-        res.status(401).json({
+        return res.status(401).json({
             message: "User email not verified yet, please verify the email.",
             succes: false,
             err: "Email not verified"
@@ -249,7 +249,8 @@ export async function getMeController(req, res){
         succes: true,
         user: {
             username: user.username,
-            email: user.email
+            email: user.email,
+            verified: user.verified
         }
     })
 }

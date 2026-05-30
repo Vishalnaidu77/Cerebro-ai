@@ -21,7 +21,7 @@ const AccessCard = () => {
           Access your Cerebro AI workspace to continue.
         </p>
         
-        <AuthButton onClick={() => navigate('/')}>
+        <AuthButton onClick={() => navigate("/")}>
           Access your account
         </AuthButton>
       </div>
