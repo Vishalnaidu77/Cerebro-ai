@@ -21,6 +21,10 @@ const Protected = ({ children }) => {
         return <Navigate to="/login" replace />
     }
 
+    if(!user.verified){
+      return <Navigate to="verification" replace />
+    }
+
   return children
 }
 

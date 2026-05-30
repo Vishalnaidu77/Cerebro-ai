@@ -1,5 +1,5 @@
 import React from 'react'
-import { getMe, login, register } from '../services/auth.api'
+import { getMe, login, register, resendEmail } from '../services/auth.api'
 import { useDispatch } from 'react-redux'
 import { setError, setLoading, setUser } from '../auth.slice'
 
@@ -11,7 +11,7 @@ const useAuth = () => {
         try {
             dispatch(setLoading(true))
             const res = await register(username, email, password)
-            dispatch(setUser(res.user))
+            dispatch(setUser(res))
         } catch (err) {
             dispatch(setError(err.response?.data?.message))
         } finally{
@@ -23,7 +23,7 @@ const useAuth = () => {
        try {
         dispatch(setLoading(true))
         const res = await login(email, password)
-        dispatch(setUser(res.user))
+        dispatch(setUser(res))
        } catch (err) {
         dispatch(setError(err.response?.data?.message))
        } finally{
@@ -43,10 +43,24 @@ const useAuth = () => {
         }
     }
 
+    const handleResendEmail = async (email) => {
+        try {
+            dispatch(setLoading(true))
+            const res = await resendEmail(email)
+            return res
+        } catch (err) {
+            dispatch(setError(`Error resend verification mail: ${err}`))
+        } finally{
+            dispatch(setLoading(false))
+        }
+    }
+
+
   return {
     handleRegister,
     handleLogin,
-    handleGetMe
+    handleGetMe,
+    handleResendEmail
   }
 }
 
