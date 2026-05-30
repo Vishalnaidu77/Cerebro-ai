@@ -83,11 +83,12 @@ export async function registerController(req, res) {
         session.endSession()
 
         res.status(200).json({
-            message: "User register successfullt, verification mail sent.",
+            message: "User register successfully, verification mail sent.",
             success: true,
             user: {
                 username: user.username,
-                email: user.email
+                email: user.email,
+                verified: user.verified
             }
         })
     } catch (err) {
@@ -176,7 +177,8 @@ export async function loginController(req, res){
         success: true,
         user: {
             username: user.username,
-            email: user.email
+            email: user.email,
+            verified: user.verified
         }
     })
 }

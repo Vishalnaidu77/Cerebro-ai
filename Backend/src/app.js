@@ -1,5 +1,4 @@
 import express from 'express'
-import connectToDb from './config/database.js'
 import authRouter from './routes/auth.route.js'
 import aiRouter from './routes/chat.routes.js'
 import cookieParser from 'cookie-parser'

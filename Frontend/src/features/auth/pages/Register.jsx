@@ -8,19 +8,23 @@ import AuthHeader from '../components/AuthHeader'
 import AuthInput from '../components/AuthInput'
 import AuthButton from '../components/AuthButton'
 import AuthError from '../components/AuthError'
+import SuccessMessage from '../components/SuccessMessage'
+import VerificationPage from './VerificationPage'
 
 const Register = () => {
   const [username, setUsername] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [localValidationError, setLocalValidationError] = useState('')
+  const [registerSuccessfully, setRegisterSuccessfully] = useState(false)
 
   const { handleRegister } = useAuth()
   const dispatch = useDispatch()
   const navigate = useNavigate()
 
   const { user, loading, error, initialized } = useSelector((state) => state.auth)
-
+  console.log(user);
+  
   // Clear errors on component mount
   useEffect(() => {
     dispatch(setError(null))
@@ -29,7 +33,7 @@ const Register = () => {
 
   // Redirect to dashboard if logged in
   useEffect(() => {
-    if (initialized && user) {
+    if (initialized && user && user.verified) {
       navigate('/')
     }
   }, [user, initialized, navigate])
@@ -61,16 +65,31 @@ const Register = () => {
 
     try {
       await handleRegister(username, email, password)
+      setRegisterSuccessfully(true)
+      navigate("/verification")
     } catch (err) {
       // Errors are handled in Redux by useAuth
     }
   }
+
+  // if(!user?.user?.verified){
+  //   return (
+  //     <VerificationPage 
+  //       loading={loading}
+  //       error={error}
+  //       successMessage={user?.message}
+  //     />
+  //   )
+  // }
 
   return (
     <AuthCard>
       <AuthHeader title="Create Account" subtitle="Get started with Cerebro AI" />
 
       <AuthError message={localValidationError || error} />
+      {registerSuccessfully && (
+        <SuccessMessage message={user?.message} />
+      )}
 
       <form onSubmit={handleSubmit} className="space-y-5">
         <AuthInput

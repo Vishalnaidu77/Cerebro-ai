@@ -10,6 +10,6 @@ authRouter.post("/login", loginController)
 authRouter.get("/getme", verifyUser , getMeController)
 
 authRouter.get("/verify-email", verifyEmail)
-authRouter.post("/resend-verify-email", verifyUser, resendVerificationEmail)
+authRouter.post("/resend-verify-email", resendVerificationEmail)
 
 export default authRouter

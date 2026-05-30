@@ -28,3 +28,11 @@ export async function getMe() {
     const res = await api.get("/getme")
     return res.data
 }
+
+export async function resendEmail(email) {
+    const res = await api.post("/resend-verify-email", {
+        email
+    })
+
+    return res.data
+}
