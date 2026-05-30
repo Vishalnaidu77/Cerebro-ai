@@ -1,7 +1,7 @@
-import React from 'react'
+import React, { useState } from 'react'
 import AuthCard from '../components/AuthCard'
 import AuthButton from '../components/AuthButton'
-import { Link } from 'react-router'
+import { Link, useLocation } from 'react-router'
 import { useSelector } from 'react-redux'
 import useAuth from '../hooks/useAuth'
 
@@ -10,12 +10,16 @@ const VerificationPage = () => {
     const { user, loading, error } = useSelector(state => state.auth)
     const { handleResendEmail } = useAuth()
 
+    const location = useLocation()
+    const email = user?.email || location.state?.email
+
+    const [ resendSuccessMsg, setResendSuccessMsg ] = useState(null)
+
     const onResend = async (e) => {
         e.preventDefault()
-        await handleResendEmail(user?.user?.email)
+        const res = await handleResendEmail(email)
+        setResendSuccessMsg(res.message)
     }
-
-    const successMessage = user?.message || ""
 
   return (
     <AuthCard>
@@ -45,12 +49,12 @@ const VerificationPage = () => {
           </div>
         )}
 
-        {successMessage && (
+        {resendSuccessMsg && (
           <div className="w-full mb-6 p-3 bg-emerald-950/30 border border-emerald-500/20 text-emerald-400 text-sm rounded-lg flex items-start gap-2.5 animate-fadeIn">
             <svg className="w-5 h-5 shrink-0 mt-0.5 text-emerald-400" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
-            <span className="text-left">{successMessage}</span>
+            <span className="text-left">{resendSuccessMsg}</span>
           </div>
         )}
 

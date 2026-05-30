@@ -11,7 +11,7 @@ const useAuth = () => {
         try {
             dispatch(setLoading(true))
             const res = await register(username, email, password)
-            dispatch(setUser(res))
+            dispatch(setUser(res.user))
         } catch (err) {
             dispatch(setError(err.response?.data?.message))
         } finally{
@@ -23,9 +23,10 @@ const useAuth = () => {
        try {
         dispatch(setLoading(true))
         const res = await login(email, password)
-        dispatch(setUser(res))
+        dispatch(setUser(res.user))
        } catch (err) {
         dispatch(setError(err.response?.data?.message))
+        throw err
        } finally{
         dispatch(setLoading(false))
        }

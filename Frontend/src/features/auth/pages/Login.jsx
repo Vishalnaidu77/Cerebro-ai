@@ -38,10 +38,21 @@ const Login = () => {
 
     try {
       await handleLogin(email, password)
+      navigate('/')
     } catch (err) {
-      // Errors are handled in Redux by useAuth
+      if(err.response?.data?.err === "Email not verified"){
+        navigate("/verification", {
+          state: { email }
+        })
+      }
     }
   }
+
+  useEffect(() => {
+    if(initialized && user && !user?.verified) {
+      navigate("/verification")
+    }
+  }, [user, initialized, navigate])
 
   if (!initialized) {
     return (
