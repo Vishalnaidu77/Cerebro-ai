@@ -25,6 +25,6 @@ export async function login(email, password) {
 }
 
 export async function getMe() {
-    const res = await api.post("/getme")
+    const res = await api.get("/getme")
     return res.data
 }
