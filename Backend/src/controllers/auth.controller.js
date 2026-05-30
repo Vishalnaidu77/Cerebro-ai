@@ -229,3 +229,25 @@ export async function resendVerificationEmail(req, res){
     })
 }
 
+export async function getMeController(req, res){
+    const  email  = req.email
+    console.log(email);
+
+    const user = await userModel.findOne({ email })
+    if(!user){
+        return res.status(401).json({
+            message: "Unauthorized user",
+            success: false,
+            err: "Unauthorized"
+        })
+    }
+
+    res.status(200).json({
+        message: "User data fetched",
+        succes: true,
+        user: {
+            username: user.username,
+            email: user.email
+        }
+    })
+}
