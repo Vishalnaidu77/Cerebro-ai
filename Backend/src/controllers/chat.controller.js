@@ -1,4 +1,5 @@
 import { generateResponse, generateTitle } from "../services/ai.service.js"
+import { internetSearch } from "../services/tavily.service.js"
 
 export async function generateContent(req, res) {
     const { message } = req.body
@@ -17,5 +18,23 @@ export async function generateContent(req, res) {
     res.status(200).json({
         message: content,
         title,
+    })
+}
+
+export async function internetSearchController(req, res) {
+    const { message } = req.body
+
+    if(!message){
+        return res.json(404).json({
+            message: "Empty message",
+            success: false,
+            err: "Empty message"
+        })
+    }
+
+    const content = await internetSearch(message)
+
+    res.status(200).json({
+        message: content
     })
 }
