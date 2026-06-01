@@ -1,7 +1,7 @@
 import { useDispatch } from 'react-redux'
 import { initSocketClient } from '../services/chat.socket'
-import { addNewMessage, createNewChat, removeChat, setChats, setCurrentChatId, setError, setLoading } from '../chat.slice'
-import { sendMessage } from '../services/chat.api'
+import { addMessages, addNewMessage, createNewChat, removeChat, setChats, setCurrentChatId, setError, setLoading } from '../chat.slice'
+import { getChat, getMessages, sendMessage } from '../services/chat.api'
 
 const useChat = () => {
 
@@ -62,9 +62,46 @@ const useChat = () => {
     }
   }
 
+  const handleGetChats = async () => {
+    dispatch(setLoading(true))
+    const res = await getChat()
+    const { chats } = res
+    dispatch(setChats( chats.reduce((acc, chat) => {
+      acc[ chat._id ] = {
+        id: chat._id,
+        title: chat.title,
+        messages: [],
+        lastUpdated: chat.updatedAt
+      }
+      return acc
+    }, {})))
+    dispatch(setLoading(false))
+  }
+
+  const handleGetMessages = async (chatId) => {
+    dispatch(setLoading(true))
+    const res = await getMessages(chatId)
+    const { messages } = res
+
+    const formattedMsg = messages.map((msg) => ({
+      content: msg.content,
+      role: msg.role
+    }))
+
+    dispatch(addMessages({
+      chatId,
+      messages: formattedMsg
+    }))
+
+    dispatch(setCurrentChatId(chatId))
+    dispatch(setLoading(false))
+  }
+
   return {
     initSocketClient,
-    handleSendMessage
+    handleSendMessage,
+    handleGetChats,
+    handleGetMessages
   }
 }
 
