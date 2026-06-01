@@ -1,8 +1,70 @@
+import { useDispatch } from 'react-redux'
 import { initSocketClient } from '../services/chat.socket'
+import { addNewMessage, createNewChat, removeChat, setChats, setCurrentChatId, setError, setLoading } from '../chat.slice'
+import { sendMessage } from '../services/chat.api'
 
 const useChat = () => {
+
+  const dispatch = useDispatch()
+
+  const handleSendMessage = async (message, chatId) => {
+    try {
+      dispatch(setLoading(true))
+
+      // Optimistic UI: show user message immediately
+      const tempChatId = chatId || `temp_${Date.now()}`
+      if (!chatId) {
+        dispatch(createNewChat({
+          chatId: tempChatId,
+          title: message.slice(0, 30) + (message.length > 30 ? '...' : '')
+        }))
+        dispatch(setCurrentChatId(tempChatId))
+      }
+      dispatch(addNewMessage({
+        chatId: chatId || tempChatId,
+        content: message,
+        role: "user"
+      }))
+
+      // Now wait for the AI response
+      const res = await sendMessage(message, chatId)
+      const { chat, userMessage, aiMessage } = res
+
+      // Determine the real chat ID (chat is null for existing chats)
+      const realChatId = chat?._id || chatId
+
+      // If this was a new chat, replace the temp entry with the real one
+      if (!chatId) {
+        dispatch(removeChat(tempChatId))
+        dispatch(createNewChat({
+          chatId: realChatId,
+          title: chat.title
+        }))
+        dispatch(addNewMessage({
+          chatId: realChatId,
+          content: message,
+          role: "user"
+        }))
+      }
+
+      dispatch(addNewMessage({
+        chatId: realChatId,
+        content: aiMessage.content,
+        role: aiMessage.role
+      }))
+
+      dispatch(setCurrentChatId(realChatId))
+    } catch (err) {
+      dispatch(setError(err.message))
+      throw new Error(err.message);
+    } finally {
+      dispatch(setLoading(false))
+    }
+  }
+
   return {
-    initSocketClient
+    initSocketClient,
+    handleSendMessage
   }
 }
 

@@ -33,7 +33,7 @@ export async function generateContent(req, res) {
         role: "user"
     })
 
-    const messages = await messageModel.find({ chat: chatId})
+    const messages = await messageModel.find({ chat: chatId || chat._id})
     const content = await generateResponse(messages)
 
     const aiMessage = await messageModel.create({
