@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react'
 import { useSelector } from 'react-redux'
+import ReactMarkdown from 'react-markdown'
 import useChat from '../hooks/useChat'
 
 const Dashboard = () => {
@@ -178,13 +179,37 @@ const Dashboard = () => {
                       )}
                   </div>
 
-                  {/* Message Bubble */}
-                  <div className={`px-4 py-3 rounded-2xl text-sm leading-relaxed whitespace-pre-wrap ${
+                   {/* Message Bubble */}
+                  <div className={`px-4 py-3 rounded-2xl text-sm leading-relaxed ${
                     msg.role === 'user'
-                      ? 'bg-gradient-to-br from-amber-500/15 to-yellow-600/10 border border-amber-500/20 text-zinc-100 rounded-tr-sm'
-                      : 'bg-zinc-800/50 border border-zinc-700/40 text-zinc-300 rounded-tl-sm'
+                      ? 'bg-gradient-to-br from-amber-500/15 to-yellow-600/10 border border-amber-500/20 text-zinc-100 rounded-tr-sm whitespace-pre-wrap'
+                      : 'bg-zinc-800/50 border border-zinc-700/40 text-zinc-300 rounded-tl-sm w-full'
                   }`}>
-                    {msg.content}
+                    {msg.role === 'user' ? (
+                      msg.content
+                    ) : (
+                      <ReactMarkdown
+                        components={{
+                          h1: ({ node, ...props }) => <h1 className="text-lg font-bold mt-4 mb-2 text-zinc-100 border-b border-zinc-800 pb-1" {...props} />,
+                          h2: ({ node, ...props }) => <h2 className="text-base font-bold mt-4 mb-2 text-zinc-100" {...props} />,
+                          h3: ({ node, ...props }) => <h3 className="text-sm font-semibold mt-3 mb-1 text-zinc-100" {...props} />,
+                          p: ({ node, ...props }) => <p className="mb-2 last:mb-0 text-zinc-300" {...props} />,
+                          ul: ({ node, ...props }) => <ul className="list-disc pl-5 mb-3 space-y-1 text-zinc-300" {...props} />,
+                          ol: ({ node, ...props }) => <ol className="list-decimal pl-5 mb-3 space-y-1 text-zinc-300" {...props} />,
+                          li: ({ node, ...props }) => <li className="text-zinc-300" {...props} />,
+                          code: ({ node, inline, ...props }) => (
+                            inline 
+                              ? <code className="bg-zinc-950 px-1.5 py-0.5 rounded text-amber-400 font-mono text-[11px] border border-zinc-800/60" {...props} />
+                              : <code className="block bg-zinc-950 p-3.5 rounded-xl border border-zinc-800/80 overflow-x-auto text-amber-400 font-mono text-[11px] my-3 leading-normal" {...props} />
+                          ),
+                          pre: ({ node, ...props }) => <pre className="bg-transparent p-0 m-0" {...props} />,
+                          strong: ({ node, ...props }) => <strong className="font-semibold" {...props} />,
+                          blockquote: ({ node, ...props }) => <blockquote className="border-l-2 border-amber-500/50 pl-4 italic my-3 text-zinc-400" {...props} />
+                        }}
+                      >
+                        {msg.content}
+                      </ReactMarkdown>
+                    )}
                   </div>
                 </div>
               </div>
