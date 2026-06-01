@@ -3,7 +3,12 @@ import { useSelector } from 'react-redux'
 import useChat from '../hooks/useChat'
 
 const Dashboard = () => {
-  const { initSocketClient, handleSendMessage } = useChat()
+  const { 
+    initSocketClient, 
+    handleSendMessage, 
+    handleGetChats,
+    handleGetMessages
+  } = useChat()
   const { user } = useSelector((state) => state.auth)
   const [message, setMessage] = useState('')
   const messagesEndRef = useRef(null)
@@ -11,7 +16,8 @@ const Dashboard = () => {
   const { chats, currentChatId, loading } = useSelector(state => state.chat)
 
   useEffect(() => {
-    initSocketClient()
+    initSocketClient(),
+    handleGetChats()
   }, [])
 
   useEffect(() => {
@@ -40,9 +46,9 @@ const Dashboard = () => {
     setMessages([])
   }
 
-  console.log(chats);
-  console.log(currentChatId);
-  console.log(chats[currentChatId]?.messages);
+  const handleSelectConversation = async (chatId) => {
+    await handleGetMessages(chatId)    
+  }
 
   return (
     <div className="h-screen w-screen bg-zinc-950 text-zinc-100 flex overflow-hidden font-sans relative">
@@ -86,20 +92,20 @@ const Dashboard = () => {
           <p className="px-2 pt-2 pb-1 text-[10px] font-semibold uppercase tracking-widest text-zinc-600">
             Recent
           </p>
-          {Object.keys(chats).map((conv) => (
+          {Object.values(chats).map((chat, idx) => (
             <button
-              key={conv.id}
-              onClick={() => handleSelectConversation(conv.id)}
+              key={idx}
+              onClick={() => handleSelectConversation(chat.id)}
               className={`w-full text-left px-3 py-2.5 rounded-xl text-sm transition-all duration-200 flex items-center gap-2.5 group cursor-pointer ${
-                conv.active
+                chat.active
                   ? 'bg-zinc-800/70 text-zinc-100 border border-zinc-700/50'
                   : 'text-zinc-400 hover:bg-zinc-800/40 hover:text-zinc-200 border border-transparent'
               }`}
             >
-              <svg className={`w-4 h-4 flex-shrink-0 ${conv.active ? 'text-amber-500' : 'text-zinc-600 group-hover:text-zinc-400'}`} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+              <svg className={`w-4 h-4 flex-shrink-0 ${chat.active ? 'text-amber-500' : 'text-zinc-600 group-hover:text-zinc-400'}`} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
               </svg>
-              <span className="truncate">{conv.title}</span>
+              <span className="truncate">{chat.title}</span>
             </button>
           ))}
         </div>
