@@ -35,12 +35,12 @@ const AuthInput = ({
 
   return (
     <div>
-      <label htmlFor={id} className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-2">
+      <label htmlFor={id} className="block text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: '#64648c' }}>
         {label}
       </label>
       <div className="relative">
         {icon && icons[icon] && (
-          <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-zinc-500">
+          <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none" style={{ color: '#9e9eb8' }}>
             {icons[icon]}
           </span>
         )}
@@ -52,16 +52,31 @@ const AuthInput = ({
           value={value}
           onChange={onChange}
           placeholder={placeholder}
-          className={`w-full bg-zinc-950/60 border border-zinc-800 rounded-xl py-2.5 ${
+          className={`w-full rounded-xl py-2.5 ${
             icon ? 'pl-10' : 'pl-4'
-          } ${isPasswordField ? 'pr-10' : 'pr-4'} text-zinc-100 placeholder-zinc-600 focus:outline-none focus:border-amber-500/70 focus:ring-1 focus:ring-amber-500/30 transition-all duration-200`}
+          } ${isPasswordField ? 'pr-10' : 'pr-4'} transition-all duration-200 text-sm`}
+          style={{
+            background: 'rgba(248, 247, 252, 0.8)',
+            border: '1.5px solid #e8e5f0',
+            color: '#1a1a2e',
+            outline: 'none',
+          }}
+          onFocus={(e) => {
+            e.target.style.borderColor = 'rgba(139, 92, 246, 0.5)'
+            e.target.style.boxShadow = '0 0 0 3px rgba(139, 92, 246, 0.1)'
+          }}
+          onBlur={(e) => {
+            e.target.style.borderColor = '#e8e5f0'
+            e.target.style.boxShadow = 'none'
+          }}
         />
         {isPasswordField && (
           <button
             type="button"
             disabled={disabled}
             onClick={() => setShowPassword(!showPassword)}
-            className="absolute inset-y-0 right-0 pr-3 flex items-center text-zinc-500 hover:text-zinc-300 transition-colors"
+            className="absolute inset-y-0 right-0 pr-3 flex items-center transition-colors"
+            style={{ color: '#9e9eb8' }}
           >
             {showPassword ? (
               <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">

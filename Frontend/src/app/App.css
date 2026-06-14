@@ -1,5 +1,349 @@
 @import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 
-.messsage-box::-webkit-scrollbar{
-    display: none;
+/* ── Theme Variables ── */
+:root {
+  --purple-50: #f5f3ff;
+  --purple-100: #ede9fe;
+  --purple-200: #ddd6fe;
+  --purple-300: #c4b5fd;
+  --purple-400: #a78bfa;
+  --purple-500: #8b5cf6;
+  --purple-600: #7c3aed;
+  --purple-700: #6d28d9;
+  --purple-800: #5b21b6;
+  --purple-900: #4c1d95;
+
+  --bg-primary: #fafafa;
+  --bg-secondary: #ffffff;
+  --bg-sidebar: #f8f7fc;
+  --border-light: #e8e5f0;
+  --text-primary: #1a1a2e;
+  --text-secondary: #64648c;
+  --text-muted: #9e9eb8;
+}
+
+* {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+/* ── Scrollbar Hiding ── */
+.message-box::-webkit-scrollbar {
+  display: none;
+}
+.message-box {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* ── Sidebar ── */
+.sidebar-icon {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  color: var(--text-secondary);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+  position: relative;
+}
+
+.sidebar-icon:hover {
+  background: var(--purple-50);
+  color: var(--purple-600);
+  transform: scale(1.05);
+}
+
+.sidebar-icon.active {
+  background: var(--purple-100);
+  color: var(--purple-600);
+}
+
+.sidebar-icon.active::before {
+  content: '';
+  position: absolute;
+  left: -8px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 20px;
+  background: var(--purple-500);
+  border-radius: 0 4px 4px 0;
+}
+
+/* ── Floating Orb ── */
+.orb-container {
+  width: 80px;
+  height: 80px;
+  position: relative;
+  margin: 0 auto;
+}
+
+.orb {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, #c084fc, #8b5cf6 40%, #6d28d9 70%, #4c1d95 100%);
+  box-shadow:
+    0 8px 32px rgba(139, 92, 246, 0.35),
+    0 4px 16px rgba(139, 92, 246, 0.2),
+    inset 0 -4px 12px rgba(0, 0, 0, 0.15),
+    inset 0 4px 12px rgba(255, 255, 255, 0.2);
+  animation: orbFloat 4s ease-in-out infinite, orbGlow 3s ease-in-out infinite alternate;
+}
+
+.orb::after {
+  content: '';
+  position: absolute;
+  top: 12px;
+  left: 18px;
+  width: 20px;
+  height: 14px;
+  border-radius: 50%;
+  background: radial-gradient(ellipse, rgba(255, 255, 255, 0.6), transparent);
+  filter: blur(2px);
+}
+
+@keyframes orbFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+@keyframes orbGlow {
+  0% { box-shadow: 0 8px 32px rgba(139, 92, 246, 0.3), 0 4px 16px rgba(139, 92, 246, 0.15), inset 0 -4px 12px rgba(0, 0, 0, 0.15), inset 0 4px 12px rgba(255, 255, 255, 0.2); }
+  100% { box-shadow: 0 8px 40px rgba(139, 92, 246, 0.5), 0 4px 20px rgba(139, 92, 246, 0.3), inset 0 -4px 12px rgba(0, 0, 0, 0.15), inset 0 4px 12px rgba(255, 255, 255, 0.2); }
+}
+
+/* ── Chat Input ── */
+.chat-input-wrapper {
+  background: var(--bg-secondary);
+  border: 1.5px solid var(--border-light);
+  border-radius: 16px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04), 0 1px 4px rgba(0, 0, 0, 0.02);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.chat-input-wrapper:focus-within {
+  border-color: var(--purple-300);
+  box-shadow: 0 2px 20px rgba(139, 92, 246, 0.1), 0 1px 4px rgba(139, 92, 246, 0.05);
+}
+
+.chat-input-wrapper textarea {
+  font-family: 'Inter', sans-serif;
+  resize: none;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--text-primary);
+  font-size: 14px;
+  line-height: 1.6;
+  width: 100%;
+  min-height: 24px;
+  max-height: 120px;
+}
+
+.chat-input-wrapper textarea::placeholder {
+  color: var(--text-muted);
+}
+
+/* ── Suggestion Cards ── */
+.suggestion-card {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-light);
+  border-radius: 14px;
+  padding: 20px 18px;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-height: 110px;
+}
+
+.suggestion-card:hover {
+  border-color: var(--purple-200);
+  box-shadow: 0 4px 20px rgba(139, 92, 246, 0.08);
+  transform: translateY(-2px);
+}
+
+.suggestion-card .card-icon {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+}
+
+.suggestion-card p {
+  color: var(--text-primary);
+  font-size: 13px;
+  line-height: 1.5;
+  font-weight: 450;
+}
+
+/* ── Action Buttons ── */
+.action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 500;
+  border: 1px solid var(--border-light);
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.action-btn:hover {
+  border-color: var(--purple-200);
+  background: var(--purple-50);
+}
+
+/* ── Send Button ── */
+.send-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--purple-500), var(--purple-600));
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 8px rgba(139, 92, 246, 0.3);
+}
+
+.send-btn:hover:not(:disabled) {
+  transform: scale(1.08);
+  box-shadow: 0 4px 16px rgba(139, 92, 246, 0.4);
+}
+
+.send-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* ── Toggle Switch ── */
+.toggle-switch {
+  position: relative;
+  width: 36px;
+  height: 20px;
+  border-radius: 10px;
+  background: var(--purple-500);
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.toggle-switch::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 18px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: white;
+  transition: left 0.3s;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+}
+
+/* ── Message Bubbles ── */
+.user-message {
+  background: linear-gradient(135deg, var(--purple-500), var(--purple-600));
+  color: white;
+  border-radius: 18px 18px 4px 18px;
+  padding: 12px 18px;
+  font-size: 14px;
+  line-height: 1.6;
+  max-width: 70%;
+  box-shadow: 0 2px 12px rgba(139, 92, 246, 0.2);
+}
+
+.ai-message {
+  background: transparent;
+  border: none;
+  color: black;
+  padding: 12px 0;
+  font-size: 14px;
+  line-height: 1.7;
+  max-width: 85%;
+}
+
+/* ── Chat View Sidebar Items ── */
+.chat-sidebar-item {
+  padding: 10px 14px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 13px;
+  color: var(--text-secondary);
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.chat-sidebar-item:hover {
+  background: var(--purple-50);
+  color: var(--text-primary);
+}
+
+.chat-sidebar-item.active {
+  background: var(--purple-100);
+  color: var(--purple-700);
+  font-weight: 500;
+}
+
+/* ── Fade-in animation ── */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.fade-in-up {
+  animation: fadeInUp 0.5s ease forwards;
+}
+
+.fade-in-up-delay-1 { animation-delay: 0.1s; opacity: 0; }
+.fade-in-up-delay-2 { animation-delay: 0.2s; opacity: 0; }
+.fade-in-up-delay-3 { animation-delay: 0.3s; opacity: 0; }
+.fade-in-up-delay-4 { animation-delay: 0.4s; opacity: 0; }
+
+/* ── New Chat Button ── */
+.new-chat-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 10px 14px;
+  background: linear-gradient(135deg, var(--purple-500), var(--purple-600));
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 550;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.15);
+  margin-bottom: 12px;
+}
+
+.new-chat-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(139, 92, 246, 0.25);
+  background: linear-gradient(135deg, var(--purple-600), var(--purple-700));
+}
+
+.new-chat-btn:active {
+  transform: translateY(0);
 }

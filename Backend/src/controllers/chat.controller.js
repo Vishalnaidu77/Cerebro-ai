@@ -42,6 +42,9 @@ export async function generateContent(req, res) {
         role: "ai"
     })
 
+    // Update the chat's updatedAt field to bubble it to the top as the newest active chat
+    await chatModel.updateOne({ _id: chatId || chat._id }, { updatedAt: new Date() })
+
     res.status(200).json({
         title,
         chat,
@@ -72,7 +75,7 @@ export async function getChat(req, res) {
     const email = req.email
     const user = await userModel.findOne({ email})
 
-    const chats = await chatModel.find({ user: user._id })
+    const chats = await chatModel.find({ user: user._id }).sort({ updatedAt: -1 })
 
     if(!chats){
         return res.status(404).json({
