@@ -21,7 +21,10 @@ const chatSlice = createSlice({
         },
         addNewMessage: (state, action) => {
             const { chatId, content, role } = action.payload
-            state.chats[chatId].messages.push({ content, role })
+            if (state.chats[chatId]) {
+                state.chats[chatId].messages.push({ content, role })
+                state.chats[chatId].lastUpdated = new Date().toISOString()
+            }
         },
         removeChat: (state, action) => {
             delete state.chats[action.payload]

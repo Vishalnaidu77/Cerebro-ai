@@ -17,7 +17,7 @@ const AccessCard = () => {
       />
       
       <div className="flex flex-col items-center mt-6">
-        <p className="text-zinc-400 text-sm text-center mb-6">
+        <p className="text-sm text-center mb-6" style={{ color: '#64648c' }}>
           Access your Cerebro AI workspace to continue.
         </p>
         
