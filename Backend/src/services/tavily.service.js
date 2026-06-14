@@ -4,8 +4,11 @@ const tvly = tavily({
     apiKey: process.env.TAVILY_API_KEY
 })
 
-export async function internetSearch(message){
-    const res = await tvly.search(message)
+export async function internetSearch({ message }){
+    const res = await tvly.search(message, {
+        maxResults: 5,
+        searchDepth: "advanced"
+    })
 
-    return res.results[0].content
+    return JSON.stringify(res)
 }
