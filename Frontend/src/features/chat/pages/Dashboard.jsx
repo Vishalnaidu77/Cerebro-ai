@@ -48,7 +48,7 @@ const Dashboard = () => {
   }
 
   const handleSelectConversation = async (chatId) => {
-    await handleGetMessages(chatId)    
+    await handleGetMessages(chatId, chats)    
   }
 
   return (
@@ -89,7 +89,7 @@ const Dashboard = () => {
         </div>
 
         {/* Conversation List */}
-        <div className="flex-1 overflow-y-auto px-3 space-y-1 scrollbar-thin">
+        <div className="message-box flex-1 overflow-y-auto px-3 space-y-1 scrollbar-thin">
           <p className="px-2 pt-2 pb-1 text-[10px] font-semibold uppercase tracking-widest text-zinc-600">
             Recent
           </p>
@@ -143,7 +143,7 @@ const Dashboard = () => {
         </header>
 
         {/* Messages Container */}
-        <div className="flex-1 overflow-y-auto px-6 py-6 space-y-6 scroll-smooth">
+        <div className="message-box flex-1 overflow-y-auto px-6 py-6 space-y-6 scroll-smooth">
           {!currentChatId || !chats[currentChatId] || chats[currentChatId]?.messages.length === 0 ? (
             /* Empty State */
             <div className="flex-1 flex flex-col items-center justify-center h-full text-center">
@@ -183,7 +183,7 @@ const Dashboard = () => {
                   <div className={`px-4 py-3 rounded-2xl text-sm leading-relaxed ${
                     msg.role === 'user'
                       ? 'bg-gradient-to-br from-amber-500/15 to-yellow-600/10 border border-amber-500/20 text-zinc-100 rounded-tr-sm whitespace-pre-wrap'
-                      : 'bg-zinc-800/50 border border-zinc-700/40 text-zinc-300 rounded-tl-sm w-full'
+                      : 'text-zinc-300 rounded-tl-sm w-full'
                   }`}>
                     {msg.role === 'user' ? (
                       msg.content
