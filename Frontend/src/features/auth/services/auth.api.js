@@ -1,7 +1,7 @@
 import axios from 'axios'
 
 const api = axios.create({
-    baseURL: "http://localhost:8000/api/auth",
+    baseURL: "https://cerebro-ai-h2cn.onrender.com/api/auth",
     withCredentials: true
 })
 
