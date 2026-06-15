@@ -1,7 +1,7 @@
 import { io } from "socket.io-client";
 
 export async function initSocketClient(){
-    const socket = io('http://localhost:8000', {
+    const socket = io('https://cerebro-ai-h2cn.onrender.com', {
         withCredentials: true
     })
 
