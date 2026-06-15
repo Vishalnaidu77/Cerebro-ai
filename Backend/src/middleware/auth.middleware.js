@@ -6,7 +6,7 @@ export async function verifyUser(req, res, next){
         console.log(token);
 
         if (!token) {
-            return res.status(404).json({
+            return res.status(401).json({
                 message: "Token Missing, user not logged in",
                 success: false,
                 err: "Token Missing"

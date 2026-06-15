@@ -170,7 +170,11 @@ export async function loginController(req, res){
         email: user.email
     }, process.env.JWT_SECRET)
 
-    res.cookie("token", token)
+    res.cookie("token", token, {
+        httpOnly: true,
+        secure: true, // Always true since both Vercel and Render use HTTPS in production
+        sameSite: "none" // Required for cross-origin/cross-site cookie transmission
+    })
 
     res.status(200).json({
         message: "User logged in sucessfully.",
