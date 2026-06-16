@@ -347,3 +347,98 @@
 .new-chat-btn:active {
   transform: translateY(0);
 }
+
+/* ── Loader Component ── */
+.loader-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  width: 100%;
+  background: linear-gradient(135deg, #f5f3ff, #fafafa);
+}
+
+.loader-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+}
+
+.loader-rings {
+  position: relative;
+  width: 80px;
+  height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ring-outer {
+  position: absolute;
+  width: 80px;
+  height: 80px;
+  border: 3px dashed var(--purple-400);
+  border-radius: 50%;
+  animation: spinClockwise 3s linear infinite;
+  opacity: 0.6;
+}
+
+.ring-inner {
+  position: absolute;
+  width: 56px;
+  height: 56px;
+  border: 3px solid transparent;
+  border-top-color: var(--purple-600);
+  border-bottom-color: var(--purple-600);
+  border-radius: 50%;
+  animation: spinCounterClockwise 1.5s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+}
+
+.ring-center-orb {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, #c084fc, #8b5cf6 50%, #6d28d9 100%);
+  box-shadow: 0 0 16px rgba(139, 92, 246, 0.6);
+  animation: loaderOrbPulse 1.5s ease-in-out infinite alternate;
+}
+
+.loader-logo {
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  background: linear-gradient(135deg, var(--purple-600), var(--purple-800));
+  -webkit-background-clip: text;
+  -webkit-text-fillColor: transparent;
+  animation: pulseLogo 2s ease-in-out infinite;
+}
+
+.loader-subtext {
+  font-size: 13px;
+  color: var(--text-secondary);
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  opacity: 0.8;
+}
+
+@keyframes spinClockwise {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes spinCounterClockwise {
+  from { transform: rotate(360deg); }
+  to { transform: rotate(0deg); }
+}
+
+@keyframes loaderOrbPulse {
+  0% { transform: scale(0.95); opacity: 0.8; box-shadow: 0 0 8px rgba(139, 92, 246, 0.4); }
+  100% { transform: scale(1.1); opacity: 1; box-shadow: 0 0 20px rgba(139, 92, 246, 0.8); }
+}
+
+@keyframes pulseLogo {
+  0%, 100% { opacity: 0.85; }
+  50% { opacity: 1; }
+}

@@ -1,5 +1,5 @@
 import { useDispatch } from 'react-redux'
-import { initSocketClient } from '../services/chat.socket'
+import { initSocketClient, getSocket } from '../services/chat.socket'
 import { addMessages, addNewMessage, createNewChat, removeChat, setChats, setCurrentChatId, setError, setLoading } from '../chat.slice'
 import { getChat, getMessages, sendMessage } from '../services/chat.api'
 
@@ -49,11 +49,19 @@ const useChat = () => {
 
       dispatch(addNewMessage({
         chatId: realChatId,
-        content: aiMessage.content,
-        role: aiMessage.role
+        content: "",
+        role: "ai"
       }))
 
       dispatch(setCurrentChatId(realChatId))
+
+      const socket = getSocket()
+      if(socket){
+        socket.emit("generate_ai_response", {
+          chatId: realChatId,
+          aiMessageId: aiMessage._id
+        })
+      }
     } catch (err) {
       dispatch(setError(err.message))
       throw new Error(err.message);
