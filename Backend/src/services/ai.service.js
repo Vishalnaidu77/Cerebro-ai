@@ -47,7 +47,38 @@ export async function generateResponse(messages){
         }))]
     })
 
-    return res.messages[ res.messages.length - 1].text
+    return res.messages[ res.messages.length - 1 ].text
+}
+
+export async function* generateResponseStream(messages){
+    const eventStream = agent.streamEvents({
+        messages: [
+            new SystemMessage(`
+                You are a helpful and precise assistant for answering question.
+                If you don't know the answer, say you don't know.
+                If the questionn requires up-to-date information, use the "internetSearch" tool to get the latest information from the internet and then answer based on the search results. 
+            `),
+            ...(messages.map(msg => {
+                if(msg.role === 'user'){
+                    return new HumanMessage(msg.content)
+                } else if(msg.role === 'ai'){
+                    return new AIMessage(msg.content)
+                }
+            }))
+        ]
+    }, {version: "v2"})
+
+    for await (const event of eventStream) {
+        const eventType = event.event;
+        // Capture streaming content from the model's text generation
+        if (eventType === "on_chat_model_stream") {
+            const content = event.data.chunk.content
+            // Filter out empty tool-call packets and stream only text content
+            if(content && typeof content === 'string'){
+                yield content;
+            }
+        }
+    }
 }
 
 export async function generateTitle(message) {

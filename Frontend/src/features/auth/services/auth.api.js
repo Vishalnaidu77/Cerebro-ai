@@ -1,7 +1,8 @@
 import axios from 'axios'
+import { AUTH_BASE_URL } from '../../../config/api.config'
 
 const api = axios.create({
-    baseURL: "https://cerebro-ai-h2cn.onrender.com/api/auth",
+    baseURL: AUTH_BASE_URL,
     withCredentials: true
 })
 

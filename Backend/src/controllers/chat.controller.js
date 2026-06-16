@@ -27,18 +27,19 @@ export async function generateContent(req, res) {
         })
     }
 
+    const realChatId = chatId || chat._id
+
+    // Created user message
     const userMessage = await messageModel.create({
-        chat: chatId || chat._id,
+        chat: realChatId,
         content: message,
         role: "user"
     })
 
-    const messages = await messageModel.find({ chat: chatId || chat._id})
-    const content = await generateResponse(messages)
-
+    // Create Placeholder AI Message
     const aiMessage = await messageModel.create({
         chat: chatId || chat._id,
-        content,
+        content: "",
         role: "ai"
     })
 

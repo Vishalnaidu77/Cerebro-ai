@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
-import { setCurrentChatId } from '../chat.slice'
+import { setCurrentChatId, appendChatChunk, setLoading } from '../chat.slice'
 import ReactMarkdown from 'react-markdown'
 import useChat from '../hooks/useChat'
 import { CiMenuKebab } from "react-icons/ci"
@@ -44,10 +44,71 @@ const Dashboard = () => {
   const [sidebarExpanded, setSidebarExpanded] = useState(false)
   const messagesEndRef = useRef(null)
   const textareaRef = useRef(null)
+  const scrollContainerRef = useRef(null)
+  const chunkBufferRef = useRef({ chatId: null, text: '' })
+  const rafIdRef = useRef(null)
+  const isStreamingRef = useRef(false)
   const { chats, currentChatId, loading } = useSelector(state => state.chat)
 
-  useEffect(() => { initSocketClient(); handleGetChats() }, [])
-  useEffect(() => { messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' }) }, [chats, currentChatId])
+  useEffect(() => {
+    const socket = initSocketClient();
+
+    // Buffer chunks and flush once per animation frame for smooth rendering
+    socket.on("chat_chunk", ({ chatId, chunk }) => {
+      chunkBufferRef.current.chatId = chatId
+      chunkBufferRef.current.text += chunk
+      isStreamingRef.current = true
+
+      if (!rafIdRef.current) {
+        rafIdRef.current = requestAnimationFrame(() => {
+          const { chatId: cid, text } = chunkBufferRef.current
+          if (text) {
+            dispatch(appendChatChunk({ chatId: cid, chunk: text }))
+            chunkBufferRef.current.text = ''
+          }
+          rafIdRef.current = null
+        })
+      }
+    })
+
+    socket.on("chat_complete", ({ chatId, aiMessageId, fullContent }) => {
+      // Flush any remaining buffer
+      if (chunkBufferRef.current.text) {
+        dispatch(appendChatChunk({ chatId, chunk: chunkBufferRef.current.text }))
+        chunkBufferRef.current.text = ''
+      }
+      isStreamingRef.current = false
+      dispatch(setLoading(false))
+    })
+
+    socket.on("chat_error", ({ error }) => {
+      console.error("Streaming error:", error)
+      isStreamingRef.current = false
+      dispatch(setLoading(false))
+    })
+
+    handleGetChats()
+
+    return () => {
+      socket.off("chat_chunk")
+      socket.off("chat_complete")
+      socket.off("chat_error")
+      if (rafIdRef.current) cancelAnimationFrame(rafIdRef.current)
+    }
+  }, [])
+
+  // Auto-scroll: snap instantly during streaming, smooth on chat switch
+  useEffect(() => {
+    const container = scrollContainerRef.current
+    if (!container) return
+    if (isStreamingRef.current) {
+      // Instant snap — no competing smooth-scroll animations
+      container.scrollTop = container.scrollHeight
+    } else {
+      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+    }
+  }, [chats, currentChatId])
+
 
   const handleSend = async (e) => {
     e.preventDefault()
@@ -96,7 +157,7 @@ const Dashboard = () => {
         </div>
 
         <SidebarIcon label="Chat" active={false} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" onClick={() => setSidebarExpanded(!sidebarExpanded)} />
-       
+
         <div className="flex-1" />
 
         {/* Bottom icons */}
@@ -126,14 +187,14 @@ const Dashboard = () => {
             {Object.values(chats)
               .sort((a, b) => new Date(b.lastUpdated || 0) - new Date(a.lastUpdated || 0))
               .map((chat, idx) => (
-              <div key={idx} onClick={() => handleSelectConversation(chat.id)}
-                className={`chat-sidebar-item ${chat.id === currentChatId ? 'active' : ''}`}>
-                <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
-                </svg>
-                <span className="truncate">{chat.title}</span>
-              </div>
-            ))}
+                <div key={idx} onClick={() => handleSelectConversation(chat.id)}
+                  className={`chat-sidebar-item ${chat.id === currentChatId ? 'active' : ''}`}>
+                  <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+                  </svg>
+                  <span className="truncate">{chat.title}</span>
+                </div>
+              ))}
           </div>
         </div>
       )}
@@ -151,7 +212,7 @@ const Dashboard = () => {
               <span className="text-xs px-3 py-1 rounded-full" style={{ background: 'var(--purple-50)', color: 'var(--purple-600)', fontWeight: 500 }}>Online</span>
             </header>
 
-            <div className="message-box flex-1 overflow-y-auto px-6 py-6 space-y-5">
+            <div ref={scrollContainerRef} className="message-box flex-1 overflow-y-auto px-6 py-6 space-y-5">
               {chats[currentChatId].messages.map((msg, index) => (
                 <div key={index} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                   {msg.role === 'user' ? (
