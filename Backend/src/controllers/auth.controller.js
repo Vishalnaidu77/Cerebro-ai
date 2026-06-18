@@ -19,18 +19,38 @@ export async function registerController(req, res) {
     const session = await mongoose.startSession()
     session.startTransaction();
 
+    let user;
+
     try {
-        const [user] = await userModel.create([{
+        [user] = await userModel.create([{
             username,
             email,
             password
         }], { session })
 
+        await session.commitTransaction()
+        session.endSession()
+    } catch (err) {
+        await session.abortTransaction()
+        session.endSession()
+
+        return res.status(400).json({
+            message: "Registration failed, please try again.",
+            success: false,
+            err: err.message
+        })
+    }
+
+    // Send verification email AFTER user is committed to DB
+    // If email fails, user still exists and can request a resend
+    const serverUrl = process.env.SERVER_URL || 'http://localhost:8000'
+
+    try {
         const emailVerificationtoken = jwt.sign({
             email: user.email
         }, process.env.JWT_SECRET)
 
-        const emailResponse = await sendEmail({
+        await sendEmail({
             to: email,
             subject: "Welcome to Cerebro AI",
             html: `
@@ -47,7 +67,7 @@ export async function registerController(req, res) {
 
                 <div style="margin: 30px 0;">
                     <a 
-                        href="http://localhost:8000/api/auth/verify-email?token=${emailVerificationtoken}"
+                        href="${serverUrl}/api/auth/verify-email?token=${emailVerificationtoken}"
                         style="
                             background-color: #111827;
                             color: #ffffff;
@@ -65,7 +85,7 @@ export async function registerController(req, res) {
                 <p>This verification link will expire in 30 minutes.</p>
 
                 <p>
-                    If you didn’t create this account, you can safely ignore this email.
+                    If you didn't create this account, you can safely ignore this email.
                 </p>
 
                 <br />
@@ -78,29 +98,20 @@ export async function registerController(req, res) {
             </div>
             `
         })
-
-        await session.commitTransaction()
-        session.endSession()
-
-        res.status(200).json({
-            message: "User register successfully, verification mail sent.",
-            success: true,
-            user: {
-                username: user.username,
-                email: user.email,
-                verified: user.verified
-            }
-        })
-    } catch (err) {
-        await session.abortTransaction()
-        session.endSession()
-
-        return res.status(400).json({
-            message: "Registration failed, please try again.",
-            success: false,
-            err: err.message
-        })
+    } catch (emailErr) {
+        console.error('Verification email failed to send:', emailErr.message)
+        // Don't fail registration — user can resend later
     }
+
+    res.status(200).json({
+        message: "User register successfully, verification mail sent.",
+        success: true,
+        user: {
+            username: user.username,
+            email: user.email,
+            verified: user.verified
+        }
+    })
 }
 
 export async function verifyEmail(req, res) {
@@ -220,7 +231,7 @@ export async function resendVerificationEmail(req, res){
                 <p>Hi ${user.username},</p> 
                 <p> You requested a new email verification link for your Cerebro AI account. </p> 
                 <div style="margin: 30px 0;"> 
-                    <a href="http://localhost:8000/api/auth/verify-email?token=${emailVerificationToken}" style=" background-color: #111827; color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: bold; " > Verify Email </a> 
+                    <a href="${process.env.SERVER_URL || 'http://localhost:8000'}/api/auth/verify-email?token=${emailVerificationToken}" style=" background-color: #111827; color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: bold; " > Verify Email </a> 
                 </div> <p>This link will expire in 30 minutes.</p> 
                 <p> If you didn’t request this email, you can safely ignore it. </p> 
                 <br /> 
