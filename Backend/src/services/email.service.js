@@ -9,7 +9,10 @@ const transport = nodemailer.createTransport({
         clientSecret: process.env.CLIENT_SECRET,
         refreshToken: process.env.REFRESH_TOKEN,
         user: process.env.USER_EMAIL
-    }
+    },
+    connectionTimeout: 10000,  // 10s to establish connection
+    greetingTimeout: 10000,    // 10s for server greeting
+    socketTimeout: 15000       // 15s for socket inactivity
 })
 
 transport.verify()
