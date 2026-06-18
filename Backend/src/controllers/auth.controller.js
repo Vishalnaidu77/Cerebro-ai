@@ -44,6 +44,7 @@ export async function registerController(req, res) {
     // Send verification email AFTER user is committed to DB
     // If email fails, user still exists and can request a resend
     const serverUrl = process.env.SERVER_URL || 'http://localhost:8000'
+    let emailSent = false
 
     try {
         const emailVerificationtoken = jwt.sign({
@@ -98,14 +99,18 @@ export async function registerController(req, res) {
             </div>
             `
         })
+        emailSent = true
     } catch (emailErr) {
         console.error('Verification email failed to send:', emailErr.message)
         // Don't fail registration — user can resend later
     }
 
     res.status(200).json({
-        message: "User register successfully, verification mail sent.",
+        message: emailSent 
+            ? "User registered successfully, verification mail sent." 
+            : "User registered successfully, but verification mail failed to send. Please use resend option.",
         success: true,
+        emailSent,
         user: {
             username: user.username,
             email: user.email,
