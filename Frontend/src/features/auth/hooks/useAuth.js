@@ -13,7 +13,8 @@ const useAuth = () => {
             const res = await register(username, email, password)
             dispatch(setUser(res.user))
         } catch (err) {
-            dispatch(setError(err.response?.data?.message))
+            dispatch(setError(err.response?.data?.errors?.[0]?.msg || err.response?.data?.message || 'Registration failed'))
+            throw err
         } finally{
             dispatch(setLoading(false))
         }
