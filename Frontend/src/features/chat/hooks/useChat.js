@@ -56,17 +56,19 @@ const useChat = () => {
       dispatch(setCurrentChatId(realChatId))
 
       const socket = getSocket()
-      if(socket){
+      if (socket && socket.connected) {
         socket.emit("generate_ai_response", {
           chatId: realChatId,
           aiMessageId: aiMessage._id
         })
+      } else {
+        // Fallback: if socket is not connected, we cannot wait for socket events to end loading
+        dispatch(setLoading(false))
       }
     } catch (err) {
       dispatch(setError(err.message))
-      throw new Error(err.message);
-    } finally {
       dispatch(setLoading(false))
+      throw new Error(err.message);
     }
   }
 
@@ -87,25 +89,29 @@ const useChat = () => {
   }
 
   const handleGetMessages = async (chatId, chats) => {
+    dispatch(setCurrentChatId(chatId))
 
     if (chats[chatId]?.messages.length === 0) {
       dispatch(setLoading(true))
-      const res = await getMessages(chatId)
-      const { messages } = res
-  
-      const formattedMsg = messages.map((msg) => ({
-        content: msg.content,
-        role: msg.role
-      }))
-  
-      dispatch(addMessages({
-        chatId,  
-        messages: formattedMsg
-      }))
+      try {
+        const res = await getMessages(chatId)
+        const { messages } = res
+    
+        const formattedMsg = messages.map((msg) => ({
+          content: msg.content,
+          role: msg.role
+        }))
+    
+        dispatch(addMessages({
+          chatId,  
+          messages: formattedMsg
+        }))
+      } catch (err) {
+        dispatch(setError(err.message))
+      } finally {
+        dispatch(setLoading(false))
+      }
     }
-
-    dispatch(setCurrentChatId(chatId))
-    dispatch(setLoading(false))
   }
 
   return {
