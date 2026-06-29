@@ -4,6 +4,7 @@ import { setCurrentChatId, appendChatChunk, setLoading } from '../chat.slice'
 import ReactMarkdown from 'react-markdown'
 import useChat from '../hooks/useChat'
 import { CiMenuKebab } from "react-icons/ci"
+import Loader from '../../../app/Loader'
 
 const SUGGESTIONS = [
   { text: "Write a to-do list for a personal project", icon: "person" },
@@ -144,6 +145,7 @@ const Dashboard = () => {
   }
 
   const hasMessages = currentChatId && chats[currentChatId] && chats[currentChatId]?.messages?.length > 0
+  const isChatLoading = loading && currentChatId && (!chats[currentChatId] || !chats[currentChatId]?.messages || chats[currentChatId]?.messages?.length === 0)
   const userName = user?.username || 'User'
 
   return (
@@ -201,7 +203,7 @@ const Dashboard = () => {
 
       {/* Main Content */}
       <main className="flex-1 flex flex-col min-w-0">
-        {hasMessages ? (
+        {hasMessages || isChatLoading ? (
           /* ── Chat View ── */
           <>
             <header className="flex-shrink-0 px-6 py-3 flex items-center justify-between" style={{ borderBottom: '1px solid var(--border-light)' }}>
@@ -212,45 +214,77 @@ const Dashboard = () => {
               <span className="text-xs px-3 py-1 rounded-full" style={{ background: 'var(--purple-50)', color: 'var(--purple-600)', fontWeight: 500 }}>Online</span>
             </header>
 
-            <div ref={scrollContainerRef} className="message-box flex-1 overflow-y-auto px-6 py-6 space-y-5">
-              {chats[currentChatId].messages.map((msg, index) => (
-                <div key={index} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                  {msg.role === 'user' ? (
-                    <div className="user-message">{msg.content}</div>
-                  ) : (
-                    <div className="ai-message">
-                      <ReactMarkdown components={{
-                        h1: ({ node, ...props }) => <h1 className="text-lg font-bold mt-4 mb-2" {...props} />,
-                        h2: ({ node, ...props }) => <h2 className="text-base font-bold mt-4 mb-2" {...props} />,
-                        h3: ({ node, ...props }) => <h3 className="text-sm font-semibold mt-3 mb-1" {...props} />,
-                        p: ({ node, ...props }) => <p className="mb-2 last:mb-0" {...props} />,
-                        ul: ({ node, ...props }) => <ul className="list-disc pl-5 mb-3 space-y-1" {...props} />,
-                        ol: ({ node, ...props }) => <ol className="list-decimal pl-5 mb-3 space-y-1" {...props} />,
-                        li: ({ node, ...props }) => <li {...props} />,
-                        code: ({ node, inline, ...props }) => (
-                          inline
-                            ? <code className="px-1.5 py-0.5 rounded font-mono text-xs" style={{ background: 'var(--purple-50)', color: 'var(--purple-700)', border: '1px solid var(--purple-100)' }} {...props} />
-                            : <code className="block p-3.5 rounded-xl overflow-x-auto font-mono text-xs my-3 leading-normal" style={{ background: '#f8f7fc', color: 'var(--purple-700)', border: '1px solid var(--border-light)' }} {...props} />
-                        ),
-                        pre: ({ node, ...props }) => <pre className="bg-transparent p-0 m-0" {...props} />,
-                        strong: ({ node, ...props }) => <strong className="font-semibold" {...props} />,
-                        blockquote: ({ node, ...props }) => <blockquote className="pl-4 italic my-3" style={{ borderLeft: '2px solid var(--purple-300)', color: 'var(--text-muted)' }} {...props} />,
-                      }}>{msg.content}</ReactMarkdown>
+            {isChatLoading ? (
+              <div className="flex-1 flex items-center justify-center">
+                <Loader fullScreen={false} text="Loading messages..." />
+              </div>
+            ) : (
+              <div ref={scrollContainerRef} className="message-box flex-1 overflow-y-auto px-6 py-6 space-y-5">
+                {chats[currentChatId]?.messages?.map((msg, index) => {
+                  if (msg.role === 'ai' && !msg.content.trim()) return null;
+                  return (
+                    <div key={index} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                      {msg.role === 'user' ? (
+                        <div className="user-message">{msg.content}</div>
+                      ) : (
+                        <div className="ai-message">
+                          <ReactMarkdown components={{
+                            h1: ({ node, ...props }) => <h1 className="text-lg font-bold mt-4 mb-2" {...props} />,
+                            h2: ({ node, ...props }) => <h2 className="text-base font-bold mt-4 mb-2" {...props} />,
+                            h3: ({ node, ...props }) => <h3 className="text-sm font-semibold mt-3 mb-1" {...props} />,
+                            p: ({ node, ...props }) => <p className="mb-2 last:mb-0" {...props} />,
+                            ul: ({ node, ...props }) => <ul className="list-disc pl-5 mb-3 space-y-1" {...props} />,
+                            ol: ({ node, ...props }) => <ol className="list-decimal pl-5 mb-3 space-y-1" {...props} />,
+                            li: ({ node, ...props }) => <li {...props} />,
+                            code: ({ node, inline, ...props }) => (
+                              inline
+                                ? <code className="px-1.5 py-0.5 rounded font-mono text-xs" style={{ background: 'var(--purple-50)', color: 'var(--purple-700)', border: '1px solid var(--purple-100)' }} {...props} />
+                                : <code className="block p-3.5 rounded-xl overflow-x-auto font-mono text-xs my-3 leading-normal" style={{ background: '#f8f7fc', color: 'var(--purple-700)', border: '1px solid var(--border-light)' }} {...props} />
+                            ),
+                            pre: ({ node, ...props }) => <pre className="bg-transparent p-0 m-0" {...props} />,
+                            strong: ({ node, ...props }) => <strong className="font-semibold" {...props} />,
+                            blockquote: ({ node, ...props }) => <blockquote className="pl-4 italic my-3" style={{ borderLeft: '2px solid var(--purple-300)', color: 'var(--text-muted)' }} {...props} />,
+                          }}>{msg.content}</ReactMarkdown>
+                        </div>
+                      )}
                     </div>
-                  )}
-                </div>
-              ))}
-              <div ref={messagesEndRef} />
-            </div>
+                  );
+                })}
+
+                {/* Show typing/thinking indicator when loading the next response */}
+                {loading && chats[currentChatId]?.messages && (() => {
+                  const msgs = chats[currentChatId].messages
+                  const lastMsg = msgs[msgs.length - 1]
+                  if (lastMsg && (lastMsg.role === 'user' || (lastMsg.role === 'ai' && !lastMsg.content.trim()))) {
+                    return (
+                      <div className="flex justify-start">
+                        <div className="ai-message flex items-center gap-3">
+                          {/* Animated Avatar/Orb Icon */}
+                          <div style={{ width: 28, height: 28, borderRadius: '50%', background: 'radial-gradient(circle at 30% 30%, #c084fc, #8b5cf6 40%, #6d28d9 70%, #4c1d95 100%)', boxShadow: '0 3px 10px rgba(139, 92, 246, 0.25)' }} />
+                          <div className="typing-indicator">
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                          </div>
+                        </div>
+                      </div>
+                    )
+                  }
+                  return null
+                })()}
+
+                <div ref={messagesEndRef} />
+              </div>
+            )}
 
             {/* Chat Input */}
             <div className="flex-shrink-0 px-6 py-4" style={{ borderTop: '1px solid var(--border-light)' }}>
               <form onSubmit={handleSend} className="flex items-end gap-3">
                 <div className="chat-input-wrapper flex-1 px-4 py-3">
                   <textarea ref={textareaRef} rows={1} value={message} onChange={handleTextareaChange} onKeyDown={handleKeyDown}
-                    placeholder="Ask AI a question or make a request..." id="chat-message-input" />
+                    placeholder="Ask AI a question or make a request..." id="chat-message-input" disabled={isChatLoading} />
                 </div>
-                <button type="submit" disabled={!message.trim()} className="send-btn" id="chat-send-button">
+                <button type="submit" disabled={!message.trim() || isChatLoading} className="send-btn" id="chat-send-button">
                   <svg width="16" height="16" fill="none" stroke="white" strokeWidth="2" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 10.5L12 3m0 0l7.5 7.5M12 3v18" />
                   </svg>
